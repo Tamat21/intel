@@ -1,0 +1,295 @@
+;
+; I219v.inf
+;
+; Installation file for Intel i219-v Network Adapter Driver with Gaming Optimizations
+;
+; Copyright (c) 2025 Manus AI
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = Net
+ClassGuid   = {4d36e972-e325-11ce-bfc1-08002be10318}
+Provider    = %ManufacturerName%
+CatalogFile = I219v.cat
+DriverVer   = 05/22/2025,1.0.0.1
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir     = 13
+I219v.CopyFiles    = 13
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+I219v.sys = 1,,
+
+;*****************************************
+; I219v Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName% = Standard,NTamd64
+
+[Standard.NTamd64]
+%I219v.DeviceDesc% = I219v.ndi, PCI\VEN_8086&DEV_15F2 ; Intel i219-V
+
+[I219v.ndi]
+CopyFiles       = I219v.CopyFiles
+AddReg          = I219v.Reg, I219v.params, I219v.GamingParams
+
+[I219v.ndi.Services]
+AddService      = I219v, 2, I219v.Service, I219v.EventLog
+
+[I219v.CopyFiles]
+I219v.sys
+
+[I219v.Service]
+DisplayName     = %I219v.Service.DispName%
+ServiceType     = 1 ;%SERVICE_KERNEL_DRIVER%
+StartType       = 3 ;%SERVICE_DEMAND_START%
+ErrorControl    = 1 ;%SERVICE_ERROR_NORMAL%
+ServiceBinary   = %13%\I219v.sys
+LoadOrderGroup  = NDIS
+
+[I219v.EventLog]
+AddReg = I219v.AddEventLog
+
+[I219v.AddEventLog]
+HKR, , EventMessageFile, 0x00020000, "%%SystemRoot%%\System32\netevent.dll"
+HKR, , TypesSupported,   0x00010001, 7
+
+[I219v.Reg]
+HKR, Ndi,                     Service,    0, "I219v"
+HKR, Ndi\Interfaces,          UpperRange, 0, "ndis5"
+HKR, Ndi\Interfaces,          LowerRange, 0, "ethernet"
+HKR, Ndi,                     HelpText,   0, %I219v.Help%
+
+;-----------------------------------------------------------------------------
+; Common parameters
+;-----------------------------------------------------------------------------
+[I219v.params]
+; Speed & Duplex
+HKR, Ndi\params\*SpeedDuplex,                  ParamDesc,              0, %SpeedDuplex%
+HKR, Ndi\params\*SpeedDuplex,                  default,                0, "0"
+HKR, Ndi\params\*SpeedDuplex,                  type,                   0, "enum"
+HKR, Ndi\params\*SpeedDuplex\enum,             "0",                    0, %AutoNegotiation%
+HKR, Ndi\params\*SpeedDuplex\enum,             "1",                    0, %10Mb-Half-Duplex%
+HKR, Ndi\params\*SpeedDuplex\enum,             "2",                    0, %10Mb-Full-Duplex%
+HKR, Ndi\params\*SpeedDuplex\enum,             "3",                    0, %100Mb-Half-Duplex%
+HKR, Ndi\params\*SpeedDuplex\enum,             "4",                    0, %100Mb-Full-Duplex%
+HKR, Ndi\params\*SpeedDuplex\enum,             "6",                    0, %1Gb-Full-Duplex%
+
+; Flow Control
+HKR, Ndi\params\*FlowControl,                  ParamDesc,              0, %FlowControl%
+HKR, Ndi\params\*FlowControl,                  default,                0, "3"
+HKR, Ndi\params\*FlowControl,                  type,                   0, "enum"
+HKR, Ndi\params\*FlowControl\enum,             "0",                    0, %Disabled%
+HKR, Ndi\params\*FlowControl\enum,             "1",                    0, %TxEnabled%
+HKR, Ndi\params\*FlowControl\enum,             "2",                    0, %RxEnabled%
+HKR, Ndi\params\*FlowControl\enum,             "3",                    0, %RxTxEnabled%
+
+; Receive Buffers
+HKR, Ndi\params\*ReceiveBuffers,               ParamDesc,              0, %ReceiveBuffers%
+HKR, Ndi\params\*ReceiveBuffers,               default,                0, "256"
+HKR, Ndi\params\*ReceiveBuffers,               min,                    0, "64"
+HKR, Ndi\params\*ReceiveBuffers,               max,                    0, "4096"
+HKR, Ndi\params\*ReceiveBuffers,               step,                   0, "1"
+HKR, Ndi\params\*ReceiveBuffers,               Base,                   0, "10"
+HKR, Ndi\params\*ReceiveBuffers,               type,                   0, "int"
+
+; Transmit Buffers
+HKR, Ndi\params\*TransmitBuffers,              ParamDesc,              0, %TransmitBuffers%
+HKR, Ndi\params\*TransmitBuffers,              default,                0, "256"
+HKR, Ndi\params\*TransmitBuffers,              min,                    0, "64"
+HKR, Ndi\params\*TransmitBuffers,              max,                    0, "4096"
+HKR, Ndi\params\*TransmitBuffers,              step,                   0, "1"
+HKR, Ndi\params\*TransmitBuffers,              Base,                   0, "10"
+HKR, Ndi\params\*TransmitBuffers,              type,                   0, "int"
+
+; Interrupt Moderation
+HKR, Ndi\params\*InterruptModeration,          ParamDesc,              0, %InterruptModeration%
+HKR, Ndi\params\*InterruptModeration,          default,                0, "1"
+HKR, Ndi\params\*InterruptModeration,          type,                   0, "enum"
+HKR, Ndi\params\*InterruptModeration\enum,     "0",                    0, %Disabled%
+HKR, Ndi\params\*InterruptModeration\enum,     "1",                    0, %Enabled%
+
+; Energy Efficient Ethernet
+HKR, Ndi\params\*EEE,                          ParamDesc,              0, %EEE%
+HKR, Ndi\params\*EEE,                          default,                0, "1"
+HKR, Ndi\params\*EEE,                          type,                   0, "enum"
+HKR, Ndi\params\*EEE\enum,                     "0",                    0, %Disabled%
+HKR, Ndi\params\*EEE\enum,                     "1",                    0, %Enabled%
+
+; Jumbo Packet
+HKR, Ndi\params\*JumboPacket,                  ParamDesc,              0, %JumboPacket%
+HKR, Ndi\params\*JumboPacket,                  default,                0, "1514"
+HKR, Ndi\params\*JumboPacket,                  type,                   0, "enum"
+HKR, Ndi\params\*JumboPacket\enum,             "1514",                 0, %JumboPacket_1514%
+HKR, Ndi\params\*JumboPacket\enum,             "4088",                 0, %JumboPacket_4088%
+HKR, Ndi\params\*JumboPacket\enum,             "9014",                 0, %JumboPacket_9014%
+
+;-----------------------------------------------------------------------------
+; Gaming optimization parameters
+;-----------------------------------------------------------------------------
+[I219v.GamingParams]
+; Gaming Profile
+HKR, Ndi\params\GamingProfile,                 ParamDesc,              0, %GamingProfile%
+HKR, Ndi\params\GamingProfile,                 default,                0, "1"
+HKR, Ndi\params\GamingProfile,                 type,                   0, "enum"
+HKR, Ndi\params\GamingProfile\enum,            "0",                    0, %GamingProfile_Disabled%
+HKR, Ndi\params\GamingProfile\enum,            "1",                    0, %GamingProfile_Balanced%
+HKR, Ndi\params\GamingProfile\enum,            "2",                    0, %GamingProfile_Competitive%
+HKR, Ndi\params\GamingProfile\enum,            "3",                    0, %GamingProfile_Streaming%
+HKR, Ndi\params\GamingProfile\enum,            "4",                    0, %GamingProfile_Custom%
+
+; Traffic Prioritization
+HKR, Ndi\params\TrafficPrioritization,         ParamDesc,              0, %TrafficPrioritization%
+HKR, Ndi\params\TrafficPrioritization,         default,                0, "1"
+HKR, Ndi\params\TrafficPrioritization,         type,                   0, "enum"
+HKR, Ndi\params\TrafficPrioritization\enum,    "0",                    0, %Disabled%
+HKR, Ndi\params\TrafficPrioritization\enum,    "1",                    0, %Enabled%
+
+; Latency Reduction
+HKR, Ndi\params\LatencyReduction,              ParamDesc,              0, %LatencyReduction%
+HKR, Ndi\params\LatencyReduction,              default,                0, "1"
+HKR, Ndi\params\LatencyReduction,              type,                   0, "enum"
+HKR, Ndi\params\LatencyReduction\enum,         "0",                    0, %Disabled%
+HKR, Ndi\params\LatencyReduction\enum,         "1",                    0, %Enabled%
+
+; Bandwidth Control
+HKR, Ndi\params\BandwidthControl,              ParamDesc,              0, %BandwidthControl%
+HKR, Ndi\params\BandwidthControl,              default,                0, "1"
+HKR, Ndi\params\BandwidthControl,              type,                   0, "enum"
+HKR, Ndi\params\BandwidthControl\enum,         "0",                    0, %Disabled%
+HKR, Ndi\params\BandwidthControl\enum,         "1",                    0, %Enabled%
+
+; Smart Power Management
+HKR, Ndi\params\SmartPowerManagement,          ParamDesc,              0, %SmartPowerManagement%
+HKR, Ndi\params\SmartPowerManagement,          default,                0, "1"
+HKR, Ndi\params\SmartPowerManagement,          type,                   0, "enum"
+HKR, Ndi\params\SmartPowerManagement\enum,     "0",                    0, %Disabled%
+HKR, Ndi\params\SmartPowerManagement\enum,     "1",                    0, %Enabled%
+
+; Interrupt Moderation Rate
+HKR, Ndi\params\InterruptModerationRate,       ParamDesc,              0, %InterruptModerationRate%
+HKR, Ndi\params\InterruptModerationRate,       default,                0, "50"
+HKR, Ndi\params\InterruptModerationRate,       min,                    0, "0"
+HKR, Ndi\params\InterruptModerationRate,       max,                    0, "100"
+HKR, Ndi\params\InterruptModerationRate,       step,                   0, "1"
+HKR, Ndi\params\InterruptModerationRate,       Base,                   0, "10"
+HKR, Ndi\params\InterruptModerationRate,       type,                   0, "int"
+
+; Receive Buffer Size
+HKR, Ndi\params\ReceiveBufferSize,             ParamDesc,              0, %ReceiveBufferSize%
+HKR, Ndi\params\ReceiveBufferSize,             default,                0, "2"
+HKR, Ndi\params\ReceiveBufferSize,             type,                   0, "enum"
+HKR, Ndi\params\ReceiveBufferSize\enum,        "1",                    0, %ReceiveBufferSize_1KB%
+HKR, Ndi\params\ReceiveBufferSize\enum,        "2",                    0, %ReceiveBufferSize_2KB%
+HKR, Ndi\params\ReceiveBufferSize\enum,        "4",                    0, %ReceiveBufferSize_4KB%
+HKR, Ndi\params\ReceiveBufferSize\enum,        "8",                    0, %ReceiveBufferSize_8KB%
+HKR, Ndi\params\ReceiveBufferSize\enum,        "16",                   0, %ReceiveBufferSize_16KB%
+
+; Transmit Buffer Size
+HKR, Ndi\params\TransmitBufferSize,            ParamDesc,              0, %TransmitBufferSize%
+HKR, Ndi\params\TransmitBufferSize,            default,                0, "2"
+HKR, Ndi\params\TransmitBufferSize,            type,                   0, "enum"
+HKR, Ndi\params\TransmitBufferSize\enum,       "1",                    0, %TransmitBufferSize_1KB%
+HKR, Ndi\params\TransmitBufferSize\enum,       "2",                    0, %TransmitBufferSize_2KB%
+HKR, Ndi\params\TransmitBufferSize\enum,       "4",                    0, %TransmitBufferSize_4KB%
+HKR, Ndi\params\TransmitBufferSize\enum,       "8",                    0, %TransmitBufferSize_8KB%
+HKR, Ndi\params\TransmitBufferSize\enum,       "16",                   0, %TransmitBufferSize_16KB%
+
+; Game Detection
+HKR, Ndi\params\GameDetection,                 ParamDesc,              0, %GameDetection%
+HKR, Ndi\params\GameDetection,                 default,                0, "1"
+HKR, Ndi\params\GameDetection,                 type,                   0, "enum"
+HKR, Ndi\params\GameDetection\enum,            "0",                    0, %Disabled%
+HKR, Ndi\params\GameDetection\enum,            "1",                    0, %Enabled%
+
+; TCP Optimization
+HKR, Ndi\params\TCPOptimization,               ParamDesc,              0, %TCPOptimization%
+HKR, Ndi\params\TCPOptimization,               default,                0, "1"
+HKR, Ndi\params\TCPOptimization,               type,                   0, "enum"
+HKR, Ndi\params\TCPOptimization\enum,          "0",                    0, %Disabled%
+HKR, Ndi\params\TCPOptimization\enum,          "1",                    0, %Enabled%
+
+; UDP Optimization
+HKR, Ndi\params\UDPOptimization,               ParamDesc,              0, %UDPOptimization%
+HKR, Ndi\params\UDPOptimization,               default,                0, "1"
+HKR, Ndi\params\UDPOptimization,               type,                   0, "enum"
+HKR, Ndi\params\UDPOptimization\enum,          "0",                    0, %Disabled%
+HKR, Ndi\params\UDPOptimization\enum,          "1",                    0, %Enabled%
+
+; Nagle Algorithm
+HKR, Ndi\params\NagleAlgorithm,                ParamDesc,              0, %NagleAlgorithm%
+HKR, Ndi\params\NagleAlgorithm,                default,                0, "0"
+HKR, Ndi\params\NagleAlgorithm,                type,                   0, "enum"
+HKR, Ndi\params\NagleAlgorithm\enum,           "0",                    0, %Disabled%
+HKR, Ndi\params\NagleAlgorithm\enum,           "1",                    0, %Enabled%
+
+;-----------------------------------------------------------------------------
+; String definitions
+;-----------------------------------------------------------------------------
+[Strings]
+ManufacturerName        = "Manus AI"
+DiskName                = "Intel i219-v Network Adapter Driver with Gaming Optimizations"
+I219v.DeviceDesc        = "Intel i219-v Network Adapter with Gaming Optimizations"
+I219v.Service.DispName  = "Intel i219-v Network Adapter Driver with Gaming Optimizations"
+I219v.Help              = "Intel i219-v Network Adapter Driver with Gaming Optimizations for Windows 11"
+
+; Common parameters
+SpeedDuplex             = "Speed & Duplex"
+AutoNegotiation         = "Auto Negotiation"
+10Mb-Half-Duplex        = "10 Mbps Half Duplex"
+10Mb-Full-Duplex        = "10 Mbps Full Duplex"
+100Mb-Half-Duplex       = "100 Mbps Half Duplex"
+100Mb-Full-Duplex       = "100 Mbps Full Duplex"
+1Gb-Full-Duplex         = "1.0 Gbps Full Duplex"
+
+FlowControl             = "Flow Control"
+Disabled                = "Disabled"
+Enabled                 = "Enabled"
+TxEnabled               = "Tx Enabled"
+RxEnabled               = "Rx Enabled"
+RxTxEnabled             = "Rx & Tx Enabled"
+
+ReceiveBuffers          = "Receive Buffers"
+TransmitBuffers         = "Transmit Buffers"
+InterruptModeration     = "Interrupt Moderation"
+EEE                     = "Energy Efficient Ethernet"
+JumboPacket             = "Jumbo Packet"
+JumboPacket_1514        = "1514 Bytes (Standard)"
+JumboPacket_4088        = "4088 Bytes"
+JumboPacket_9014        = "9014 Bytes"
+
+; Gaming parameters
+GamingProfile           = "Gaming Profile"
+GamingProfile_Disabled  = "Disabled"
+GamingProfile_Balanced  = "Balanced"
+GamingProfile_Competitive = "Competitive"
+GamingProfile_Streaming = "Streaming"
+GamingProfile_Custom    = "Custom"
+
+TrafficPrioritization   = "Traffic Prioritization"
+LatencyReduction        = "Latency Reduction"
+BandwidthControl        = "Bandwidth Control"
+SmartPowerManagement    = "Smart Power Management"
+InterruptModerationRate = "Interrupt Moderation Rate (0-100)"
+ReceiveBufferSize       = "Receive Buffer Size"
+ReceiveBufferSize_1KB   = "1 KB"
+ReceiveBufferSize_2KB   = "2 KB"
+ReceiveBufferSize_4KB   = "4 KB"
+ReceiveBufferSize_8KB   = "8 KB"
+ReceiveBufferSize_16KB  = "16 KB"
+TransmitBufferSize      = "Transmit Buffer Size"
+TransmitBufferSize_1KB  = "1 KB"
+TransmitBufferSize_2KB  = "2 KB"
+TransmitBufferSize_4KB  = "4 KB"
+TransmitBufferSize_8KB  = "8 KB"
+TransmitBufferSize_16KB = "16 KB"
+GameDetection           = "Game Detection"
+TCPOptimization         = "TCP Optimization"
+UDPOptimization         = "UDP Optimization"
+NagleAlgorithm          = "Nagle Algorithm"
